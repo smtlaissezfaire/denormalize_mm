@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'denormalize_mm'
-  s.version     = '0.1.0'
+  s.version     = '0.1.1'
   s.date        = '2014-06-23'
   s.summary     = "Denormalize fields easily in mongo mapper"
   s.description = "Helpers to denormalize fields easily on mongo mapper models"

@@ -5,8 +5,11 @@ Easily Denormalize fields and associations without writing lots of custom before
 
 ## Examples:
 
-Denormalizing a field:
+Initializer - config/initializers/mongo_mapper.rb:
 
+      require 'mongo_mapper/denormalization'
+
+Denormalizing a field:
 
     class Employer
       include MongoMapper::Document
@@ -26,7 +29,6 @@ Denormalizing a field:
     end
 
 Denormalizing an association:
-
 
     class Survey
       include MongoMapper::Document

@@ -1,4 +1,3 @@
-require "mongo_mapper"
 require File.dirname(__FILE__) + "/../lib/mongo_mapper/denormalization"
 
 class User

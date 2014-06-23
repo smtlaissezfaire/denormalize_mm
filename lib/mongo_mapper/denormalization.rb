@@ -1,48 +1,48 @@
-module MongoMapper
-  module Denormalization
-    def self.included(mod)
-      mod.extend(MongoMapper::Denormalization::ClassMethods)
+require 'mongo_mapper'
+
+module MongoMapper::Denormalization
+  def self.included(mod)
+    mod.extend(MongoMapper::Denormalization::ClassMethods)
+  end
+
+  module ClassMethods
+    def denormalize_field(association, field, options={})
+      denormalize(association, field, options)
     end
 
-    module ClassMethods
-      def denormalize_field(association, field, options={})
-        denormalize(association, field, options)
+    def denormalize_association(dest, options={})
+      options = options.dup
+      source = options.delete(:from)
+
+      if !source
+        raise "denormalize_association must take a from (source) option"
       end
 
-      def denormalize_association(dest, options={})
-        options = options.dup
-        source = options.delete(:from)
+      denormalize(source, dest, {
+        :target_field => dest,
+      }.merge(options))
+    end
 
-        if !source
-          raise "denormalize_association must take a from (source) option"
-        end
+    def denormalize(association, field, options={})
+      method_name = "denormalize_#{association}_#{field}"
 
-        denormalize(source, dest, {
-          :target_field => dest,
-        }.merge(options))
-      end
+      validation_method = options[:on] || "before_validation"
+      source_field_code = options[:source_field] || "#{association}.#{field}"
+      target_field_code = options[:target_field] || "#{association}_#{field}"
 
-      def denormalize(association, field, options={})
-        method_name = "denormalize_#{association}_#{field}"
+      self.class_eval <<-CODE, __FILE__, __LINE__
+        #{validation_method} :#{method_name}
 
-        validation_method = options[:on] || "before_validation"
-        source_field_code = options[:source_field] || "#{association}.#{field}"
-        target_field_code = options[:target_field] || "#{association}_#{field}"
-
-        self.class_eval <<-CODE, __FILE__, __LINE__
-          #{validation_method} :#{method_name}
-
-          def #{method_name}
-            if self.#{association}
-              self.#{target_field_code} = #{source_field_code}
-            end
-
-            true
+        def #{method_name}
+          if self.#{association}
+            self.#{target_field_code} = #{source_field_code}
           end
 
-          private :#{method_name}
-        CODE
-      end
+          true
+        end
+
+        private :#{method_name}
+      CODE
     end
   end
 end
