@@ -20,20 +20,70 @@ module MongoMapper::Denormalization
 
       denormalize(source, dest, {
         :target_field => dest,
+        :is_association => true
       }.merge(options))
     end
 
     def denormalize(association, field, options={})
-      method_name = "denormalize_#{association}_#{field}"
+      association = association.to_sym
+      field = field.to_sym
 
-      validation_method = options[:on] || "before_validation"
-      source_field_code = options[:source_field] || "#{association}.#{field}"
-      target_field_code = options[:target_field] || "#{association}_#{field}"
+      validation_method = options[:on] || :before_validation
+      source_field_code = options[:source_field] || :"#{association}.#{field}"
+      target_field_code = options[:target_field] || :"#{association}_#{field}"
+      is_association = options[:is_association]
 
+      denormalize_on_validation(association, field, validation_method, source_field_code, target_field_code)
+      denormalize_on_update(association, field, is_association, target_field_code)
+    end
+
+  private
+
+    def denormalize_on_update(association, field, is_association, target_field_code)
+      if is_association
+        field = :"#{field}_id"
+        target_field_code = :"#{target_field_code}_id"
+      end
+
+      klass = self.associations[association].klass
+
+      collection_name = self.collection_name
+      reverse_denormalization_method_name = "denormalize_#{collection_name}_#{association}_#{field}"
+
+      klass.class_eval(<<-CODE, __FILE__, __LINE__)
+        after_update :#{reverse_denormalization_method_name}
+
+        def #{reverse_denormalization_method_name}
+          if self.#{field}_changed?
+            db = MongoMapper.database
+
+            find_query = {
+              :#{association}_id => self.id
+            }
+            update_query = {
+              '$set' => {
+                :#{target_field_code} => self.#{field}
+              }
+            }
+
+            db["#{collection_name}"].update(find_query, update_query, :multi => true)
+          end
+
+          true
+        end
+
+        private :#{reverse_denormalization_method_name}
+      CODE
+    end
+
+    def denormalize_on_validation(association, field, validation_method, source_field_code, target_field_code)
+      validation_method_name = :"denormalize_#{association}_#{field}"
+
+      # denormalize the field
       self.class_eval <<-CODE, __FILE__, __LINE__
-        #{validation_method} :#{method_name}
+        #{validation_method} :#{validation_method_name}
 
-        def #{method_name}
+        def #{validation_method_name}
           if self.#{association}
             self.#{target_field_code} = #{source_field_code}
           end
@@ -41,7 +91,7 @@ module MongoMapper::Denormalization
           true
         end
 
-        private :#{method_name}
+        private :#{validation_method_name}
       CODE
     end
   end

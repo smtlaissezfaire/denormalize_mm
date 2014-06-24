@@ -8,6 +8,8 @@ class User
   key :admin, Boolean
 
   has_many :posts
+
+  timestamps!
 end
 
 class Post
@@ -19,6 +21,8 @@ class Post
 
   belongs_to :user
   has_many :comments
+
+  timestamps!
 
   denormalize_field :user, :first_name
   denormalize_field :user, :admin
@@ -38,20 +42,29 @@ class Comment
 
   belongs_to :post
   belongs_to :user
-  belongs_to :post_user
+  belongs_to :post_user, :class_name => "User"
 
+  key :user_first_name, String
+
+  denormalize_field :user, :first_name
   denormalize_association :user, :from => :post, :target_field => :post_user
 end
 
 RSpec.configure do |config|
+  def wipe_db
+    MongoMapper.database.collections.each do |c|
+      unless (c.name =~ /system/)
+        c.remove({})
+      end
+    end
+  end
+
   config.before(:all) do
     MongoMapper.connection = Mongo::Connection.new('localhost')
     MongoMapper.database = "denormalize_mm"
   end
 
   config.before(:each) do
-    User.destroy_all
-    Post.destroy_all
-    Comment.destroy_all
+    wipe_db
   end
 end
