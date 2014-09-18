@@ -1,3 +1,5 @@
+source 'https://rubygems.org'
+
 gem 'mongo_mapper', '0.12.0'
 
 group :test do
