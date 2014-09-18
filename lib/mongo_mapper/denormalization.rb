@@ -54,6 +54,8 @@ module MongoMapper::Denormalization
         after_update :#{reverse_denormalization_method_name}
 
         def #{reverse_denormalization_method_name}
+          return true unless self.respond_to?(:#{field}) && self.respond_to?(:#{field}_changed?)
+
           if self.#{field}_changed?
             db = MongoMapper.database
 
