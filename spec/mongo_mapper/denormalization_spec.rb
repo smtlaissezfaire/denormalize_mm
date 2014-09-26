@@ -95,4 +95,25 @@ describe MongoMapper::Denormalization do
       comment.post_user.should == user2
     end
   end
+
+  describe "namespaces" do
+    it "should work with a namespace" do
+      user = User.new({
+        :first_name => "Andrew"
+      })
+      user.save!
+
+      post = user.posts.build(:user => user)
+      post.save!
+
+      comment = Namespace::Comment.new({
+        :post => post,
+      })
+      comment.save!
+
+      comment.post.should == post
+      comment.user.should == user
+      comment.user_first_name.should == "Andrew"
+    end
+  end
 end

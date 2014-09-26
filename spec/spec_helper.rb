@@ -50,6 +50,21 @@ class Comment
   denormalize_association :user, :from => :post, :target_field => :post_user
 end
 
+module Namespace
+  class Comment
+    include MongoMapper::Document
+    include MongoMapper::Denormalization
+
+    belongs_to :user
+    belongs_to :post
+
+    key :user_first_name, String
+
+    denormalize_association :user, :from => :post
+    denormalize_field :user, :first_name
+  end
+end
+
 RSpec.configure do |config|
   def wipe_db
     MongoMapper.database.collections.each do |c|

@@ -48,7 +48,7 @@ module MongoMapper::Denormalization
       klass = self.associations[association].klass
 
       collection_name = self.collection_name
-      reverse_denormalization_method_name = "denormalize_#{collection_name}_#{association}_#{field}"
+      reverse_denormalization_method_name = "_denormalize__#{collection_name}__#{association}__#{field}".gsub(/[^A-Za-z0-9_]/, '_')
 
       klass.class_eval(<<-CODE, __FILE__, __LINE__)
         after_update :#{reverse_denormalization_method_name}
