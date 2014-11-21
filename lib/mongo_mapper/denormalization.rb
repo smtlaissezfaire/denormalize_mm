@@ -10,19 +10,23 @@ module MongoMapper::Denormalization
       denormalize(association, field, options)
     end
 
-    def denormalize_association(dest, options={})
-      options = options.dup
+    def denormalize_associations(*destinations)
+      options = destinations.last.is_a?(Hash) ? destinations.pop.dup : {}
       source = options.delete(:from)
 
       if !source
         raise "denormalize_association must take a from (source) option"
       end
 
-      denormalize(source, dest, {
-        :target_field => dest,
-        :is_association => true
-      }.merge(options))
+      destinations.each do |dest|
+        denormalize(source, dest, {
+          :target_field => dest,
+          :is_association => true
+        }.merge(options))
+      end
     end
+
+    alias_method :denormalize_association, :denormalize_associations
 
     def denormalize(association, field, options={})
       association = association.to_sym

@@ -49,8 +49,8 @@ describe MongoMapper::Denormalization do
     end
   end
 
-  describe "denormalizing an association" do
-    it "should be able to denormalize an association" do
+  describe "denormalizing association(s)" do
+    it "should be able to denormalize one association" do
       user = User.new({
         :first_name => "Scott"
       })
@@ -66,6 +66,28 @@ describe MongoMapper::Denormalization do
       comment.save!
 
       comment.post_user.should == user
+    end
+
+    it "should be able to denormalize multiple associations" do
+      user = User.new({
+        :first_name => "Scott"
+      })
+      user.save!
+
+      post = user.posts.build(:user => user)
+      post.save!
+
+      comment = post.comments.build({
+        :post => post,
+        :user => user,
+      })
+      comment.save!
+
+      favorite = comment.favorites.build
+      favorite.save!
+
+      favorite.user.should == user
+      favorite.post.should == post
     end
 
     it "should update the other model when updating the original field" do

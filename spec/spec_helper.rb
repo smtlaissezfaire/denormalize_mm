@@ -43,12 +43,25 @@ class Comment
   belongs_to :post
   belongs_to :user
   belongs_to :post_user, :class_name => "User"
+  has_many :favorites
 
   key :user_first_name, String
 
   denormalize_field :user, :first_name
   denormalize_association :user, :from => :post, :target_field => :post_user
 end
+
+class Favorite
+  include MongoMapper::Document
+  include MongoMapper::Denormalization
+
+  belongs_to :comment
+  belongs_to :user
+  belongs_to :post
+
+  denormalize_associations :user, :post, :from => :comment
+end
+
 
 module Namespace
   class Comment
