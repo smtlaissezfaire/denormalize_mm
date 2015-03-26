@@ -2,7 +2,7 @@
 All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 
-## [unreleased] - 2015-03-26
+## [0.3.0] - 2015-03-26
 
 ### Changed
 - Renamed `#denormalize_association` option `:on` to `:method`. This
@@ -15,4 +15,4 @@ This project adheres to [Semantic Versioning](http://semver.org/).
   validation method call. See `ActiveModel::Validations::ClassMethods`
   and its constant `VALID_OPTIONS_FOR_VALIDATE`.
 
-[unreleased]: https://github.com/GoLearnUp/fixturize/compare/v0.2.3...HEAD
+[0.3.0]: https://github.com/GoLearnUp/fixturize/compare/v0.2.3...0.3.0
