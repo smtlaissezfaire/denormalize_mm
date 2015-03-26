@@ -1,5 +1,15 @@
 require File.dirname(__FILE__) + "/../lib/mongo_mapper/denormalization"
 
+class Region
+  include MongoMapper::Document
+
+  key :region, String
+
+  has_many :users
+
+  timestamps!
+end
+
 class User
   include MongoMapper::Document
 
@@ -7,6 +17,7 @@ class User
   key :last_name, String
   key :admin, Boolean
 
+  belongs_to :region
   has_many :posts
 
   timestamps!
@@ -20,12 +31,16 @@ class Post
   key :user_admin, Boolean
 
   belongs_to :user
+  belongs_to :region
   has_many :comments
 
   timestamps!
 
   denormalize_field :user, :first_name
   denormalize_field :user, :admin
+
+  # Denormalize this once on create but don't update it later on
+  denormalize_association :region, :from => :user, :on => :create, :reflect_updates => false
 
   attr_accessor :callback_chain_complete
 

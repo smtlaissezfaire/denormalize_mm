@@ -1,6 +1,12 @@
 require 'mongo_mapper'
 
 module MongoMapper::Denormalization
+  if defined?(ActiveModel::Validations::ClassMethods::VALID_OPTIONS_FOR_VALIDATE)
+    VALID_OPTIONS_FOR_VALIDATE = ActiveModel::Validations::ClassMethods::VALID_OPTIONS_FOR_VALIDATE
+  else
+    VALID_OPTIONS_FOR_VALIDATE = [:on, :if, :unless, :prepend].freeze
+  end
+
   def self.included(mod)
     mod.extend(MongoMapper::Denormalization::ClassMethods)
   end
@@ -32,13 +38,16 @@ module MongoMapper::Denormalization
       association = association.to_sym
       field = field.to_sym
 
-      validation_method = options[:on] || :before_validation
+      validation_method = options[:method] || :before_validation
+      validation_method_params = options.slice(*VALID_OPTIONS_FOR_VALIDATE)
+
       source_field_code = options[:source_field] || :"#{association}.#{field}"
       target_field_code = options[:target_field] || :"#{association}_#{field}"
       is_association = options[:is_association]
+      reflect_updates = options.has_key?(:reflect_updates) ? options[:reflect_updates] : true
 
-      denormalize_on_validation(association, field, validation_method, source_field_code, target_field_code)
-      denormalize_on_update(association, field, is_association, target_field_code)
+      denormalize_on_validation(association, field, validation_method, source_field_code, target_field_code, validation_method_params)
+      denormalize_on_update(association, field, is_association, target_field_code) if reflect_updates
     end
 
   private
@@ -82,12 +91,12 @@ module MongoMapper::Denormalization
       CODE
     end
 
-    def denormalize_on_validation(association, field, validation_method, source_field_code, target_field_code)
+    def denormalize_on_validation(association, field, validation_method, source_field_code, target_field_code, validation_method_params={})
       validation_method_name = :"denormalize_#{association}_#{field}"
 
       # denormalize the field
       self.class_eval <<-CODE, __FILE__, __LINE__
-        #{validation_method} :#{validation_method_name}
+        #{validation_method} :#{validation_method_name}, #{validation_method_params.inspect}
 
         def #{validation_method_name}
           if self.#{association}

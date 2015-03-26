@@ -116,6 +116,37 @@ describe MongoMapper::Denormalization do
       comment.reload
       comment.post_user.should == user2
     end
+
+    it "should not update the other model when updating the original field with :reflect_updates => false" do
+      region = Region.create!({
+        :region => "San Francisco, CA",
+      })
+
+      user = User.create!({
+        :region => region,
+        :first_name => "Andrew",
+      })
+
+      post = user.posts.create!
+
+      post.user.should == user
+      post.region.should == region
+
+      new_region = Region.create!({
+        :region => "Los Angeles, CA",
+      })
+
+      user.region = new_region
+      user.save!
+
+      # Region should not be updated by reflection
+      post.reload
+      post.region.should == region
+
+      # Region should not be updated in validation because of :on => :create
+      post.should be_valid
+      post.region.should == region
+    end
   end
 
   describe "namespaces" do
