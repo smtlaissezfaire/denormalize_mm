@@ -1,6 +1,30 @@
 require 'spec_helper'
 
 describe MongoMapper::Denormalization do
+  describe "dealing with (non-UTC) ActiveSupport::TimeWithZone objects" do
+    it "should work" do
+      time_1 = Time.now # ActiveSupport::TimeZone["Pacific Time (US & Canada)"].now
+      time_2 = time_1 + 2.hours
+
+      user = User.create!({
+        :registered_at => time_1,
+        :first_name => "Andrew"
+      })
+
+      post = user.posts.create!
+
+      post.user.registered_at.to_i.should == time_1.to_i
+      post.user_registered_at.to_i.should == time_1.to_i
+
+      user.registered_at = time_2
+      user.save!
+      post.reload
+
+      post.user.registered_at.to_i.should == time_2.to_i
+      post.user_registered_at.to_i.should == time_2.to_i
+    end
+  end
+
   describe "denormalizing a field" do
     it "should be able to denormalize a field" do
       user = User.new({
