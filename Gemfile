@@ -6,4 +6,6 @@ group :test do
   gem 'rspec'
   gem 'bson_ext'
   gem 'debugger'
+  gem 'activesupport'
+  gem 'tzinfo'
 end

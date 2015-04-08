@@ -16,6 +16,7 @@ class User
   key :first_name, String
   key :last_name, String
   key :admin, Boolean
+  key :registered_at, Time
 
   belongs_to :region
   has_many :posts
@@ -29,6 +30,7 @@ class Post
 
   key :user_first_name, String
   key :user_admin, Boolean
+  key :user_registered_at, Time
 
   belongs_to :user
   belongs_to :region
@@ -38,6 +40,7 @@ class Post
 
   denormalize_field :user, :first_name
   denormalize_field :user, :admin
+  denormalize_field :user, :registered_at
 
   # Denormalize this once on create but don't update it later on
   denormalize_association :region, :from => :user, :on => :create, :reflect_updates => false

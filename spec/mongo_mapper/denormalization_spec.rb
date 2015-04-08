@@ -1,6 +1,35 @@
 require 'spec_helper'
 
 describe MongoMapper::Denormalization do
+  describe "dealing with (non-UTC) ActiveSupport::TimeWithZone objects" do
+    it "should work" do
+      # Setting Time.zone converts all MongoMapper times into TimeWithZone objects
+      Time.zone = "Pacific Time (US & Canada)"
+
+      time_1 = Time.now
+      time_2 = time_1 + 2.hours
+
+      user = User.create!({
+        :registered_at => time_1,
+        :first_name => "Andrew"
+      })
+
+      post = user.posts.create!
+
+      post.user.registered_at.to_i.should == time_1.to_i
+      post.user_registered_at.to_i.should == time_1.to_i
+
+      user.registered_at = time_2
+      # This used to raise the following error when we didn't call .utc on TimeWithZone objects in the reverse-denormalization hook.
+      # Error was: #<BSON::InvalidDocument: ActiveSupport::TimeWithZone is not currently supported; use a UTC Time instance instead.>
+      expect { user.save! }.not_to raise_error
+
+      post.reload
+      post.user.registered_at.to_i.should == time_2.to_i
+      post.user_registered_at.to_i.should == time_2.to_i
+    end
+  end
+
   describe "denormalizing a field" do
     it "should be able to denormalize a field" do
       user = User.new({

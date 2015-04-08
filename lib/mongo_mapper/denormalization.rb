@@ -72,12 +72,15 @@ module MongoMapper::Denormalization
           if self.#{field}_changed?
             db = MongoMapper.database
 
+            new_value = self.#{field}
+            new_value = new_value.utc if new_value.is_a?(Time) && new_value.respond_to?(:utc)
+
             find_query = {
               :#{association}_id => self.id
             }
             update_query = {
               '$set' => {
-                :#{target_field_code} => self.#{field}
+                :#{target_field_code} => new_value
               }
             }
 
