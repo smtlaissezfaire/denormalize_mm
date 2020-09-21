@@ -13,6 +13,6 @@ Gem::Specification.new do |s|
   s.email       = 'scott@railsnewbie.com'
   s.files       = Dir.glob("lib/**/**.rb")
   s.homepage    =
-    'http://github.com/GoLearnUp/denormalize_mm'
+    'http://github.com/smtlaissezfaire/denormalize_mm'
   s.license       = 'MIT'
 end
