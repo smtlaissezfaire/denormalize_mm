@@ -1,4 +1,5 @@
 require File.dirname(__FILE__) + "/../lib/mongo_mapper/denormalization"
+require 'byebug'
 
 class Region
   include MongoMapper::Document
@@ -96,17 +97,22 @@ module Namespace
 end
 
 RSpec.configure do |config|
+  config.expect_with(:rspec) { |c| c.syntax = :should }
+  config.mock_with(:rspec) { |c| c.syntax = :should }
+
   def wipe_db
     MongoMapper.database.collections.each do |c|
       unless (c.name =~ /system/)
-        c.remove({})
+        c.drop
       end
     end
   end
 
   config.before(:all) do
-    MongoMapper.connection = Mongo::Connection.new('localhost')
-    MongoMapper.database = "denormalize_mm"
+    MongoMapper.connection = Mongo::Client.new(['127.0.0.1:27017'], {
+      database: "denormalize_mm",
+      logger: Logger.new('/dev/null'),
+    })
   end
 
   config.before(:each) do

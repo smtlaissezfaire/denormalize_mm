@@ -84,7 +84,7 @@ module MongoMapper::Denormalization
               }
             }
 
-            db["#{collection_name}"].update(find_query, update_query, :multi => true)
+            db["#{collection_name}"].update_many(find_query, update_query)
           end
 
           true

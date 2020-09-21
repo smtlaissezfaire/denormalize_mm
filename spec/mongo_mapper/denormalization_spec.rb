@@ -22,7 +22,7 @@ describe MongoMapper::Denormalization do
       user.registered_at = time_2
       # This used to raise the following error when we didn't call .utc on TimeWithZone objects in the reverse-denormalization hook.
       # Error was: #<BSON::InvalidDocument: ActiveSupport::TimeWithZone is not currently supported; use a UTC Time instance instead.>
-      expect { user.save! }.not_to raise_error
+      lambda { user.save! }.should_not raise_error
 
       post.reload
       post.user.registered_at.to_i.should == time_2.to_i
@@ -51,7 +51,7 @@ describe MongoMapper::Denormalization do
 
       post = user.posts.build(:user => user)
       post.save!
-      post.callback_chain_complete.should be_true
+      post.callback_chain_complete.should == true
     end
 
     it "should update other models when the original field is denormalized" do
