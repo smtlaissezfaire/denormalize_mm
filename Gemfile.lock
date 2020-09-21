@@ -1,3 +1,9 @@
+PATH
+  remote: .
+  specs:
+    denormalize_mm (0.4.0)
+      mongo_mapper (>= 0.15.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -57,7 +63,7 @@ DEPENDENCIES
   activesupport
   bson_ext
   byebug
-  mongo_mapper (>= 0.15.0)
+  denormalize_mm!
   rspec
   tzinfo
 
