@@ -80,7 +80,6 @@ class Favorite
   denormalize_associations :user, :post, :from => :comment
 end
 
-
 module Namespace
   class Comment
     include MongoMapper::Document
